@@ -130,4 +130,8 @@ export default () => {
 };
 ```
 
+### 效果
+![描述文字](./public/1.png)
+![描述文字](./public/2.png)
+
 ### 即将支持vite版本
