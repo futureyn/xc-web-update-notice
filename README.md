@@ -61,8 +61,73 @@ export default defineConfig({
 | `laterInterval` | `number` | `1000 * 60 * 10` | 用户点击“稍后更新”后的延迟时间 |
 | `isLogout` | `boolean` | `false` | 本次构建是否需要退出登录 |
 | `versionDir` | `string` | `./` | 版本文件指向（./_version.json） |
-| `checkerDir` | `string` | `` | 版本文件指向（update-checker.js） |
-| `publishDescription` | `string` | `` | 本次的发布描述 |
-| `keepVersions` | `string` | `` | 保留历史版本数量 |
+| `checkerDir` | `string` |  | 版本文件指向（update-checker.js） |
+| `publishDescription` | `string` |  | 本次的发布描述 |
+| `keepVersions` | `string` |  | 保留历史版本数量 |
 
 
+### _xcUpdate
+运行时会在全局注入一个对象
+
+| 名称 | 类型 | 说明 |
+|------|------|------|
+| `onUpdate` | `function` | 开始检测版本onUpdate((info) => { console.log('🚀发现新版本', info) }, '您当前版本') |
+| `updateLater` | `function` | 延迟下次检测更新 |   
+
+
+### Vue示例
+```javascript
+vue.config.js
+module.exports = {
+    configureWebpack: (config) => {
+        config.plugins.push(
+            new XcUpdateNoticePlugin({
+                // 本次构建不需要退出登录
+                isLogout: true,
+                // 本次构建的版本描述
+                publishDescription: "这是一次重大更新",
+                // 需要生成的历史版本数量（注意这是在构建完成后写入的，因此不要开启每次构建删除之前的dist）
+                keepVersions: 20,
+                interval: 10000,
+                // 点击稍后更新后 20 分钟后自动再次唤起更新弹窗
+                laterInterval: 20 * 60 * 1000,
+                // versionDir: "/dist/",
+                // checkerDir: "/dist/",
+            })
+        );
+    }
+}
+
+/utils/versionUpdate.js
+import { message, Modal } from "ant-design-vue";
+export default () => {
+  // 监听系统是否有更新
+  document.addEventListener("DOMContentLoaded", () => {
+    window._xcUpdate.onUpdate((info) => {
+      console.log("🚀监测到新版本", info);
+      const { isLogout, newHash } = info;
+      const modalIns = Modal.confirm({
+        title: `检测到版本有更新，${
+          isLogout ? "点击更新后重新进行登录" : "点击更新后刷新页面"
+        }`,
+        okText: "点击更新",
+        cancelText: "稍后更新",
+        onOk() {
+          if (isLogout) {
+            // TODO ...
+          } else {
+           // TODO ...
+          }
+        },
+        onCancel() {
+          modalIns.destroy();
+          // 稍后更新，10分钟后再次提示
+          window._xcUpdate.updateLater();
+        },
+      });
+    }, localStorage.getItem("version"));
+  });
+};
+```
+
+### 即将支持vite版本
