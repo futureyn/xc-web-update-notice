@@ -1,0 +1,41 @@
+{
+  "name": "xc-web-update-notice",
+  "version": "1.0.9",
+  "description": "前端版本更新通知，支持webpack4/webpack5/umijs",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "exports": {
+    ".": {
+      "require": "./dist/cjs/index.js",
+      "import": "./dist/esm/index.js"
+    },
+    "./umijs": {
+      "require": "./dist/cjs/umijs/index.js",
+      "import": "./dist/esm/umijs/index.js"
+    },
+    "./webpack": {
+      "require": "./dist/cjs/webpack/index.js",
+      "import": "./dist/esm/webpack/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+"scripts": {
+    "build:cjs": "babel src --out-dir dist/cjs --env-name cjs --extensions .js,.ts --out-file-extension .js",
+    "build:esm": "babel src --out-dir dist/esm --env-name esm --extensions .js,.ts --out-file-extension .js",
+    "build": "npm run build:cjs && npm run build:esm"
+  },
+  "author": "nnn",
+  "license": "ISC",
+  "dependencies": {
+    "webpack": "^5.102.1"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.28.3",
+    "@babel/core": "^7.28.5",
+    "@babel/preset-env": "^7.28.5",
+    "webpack-cli": "^6.0.1"
+  }
+}

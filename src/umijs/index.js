@@ -1,0 +1,133 @@
+const path = require("path");
+const fs = require("fs");
+
+const KEY = "XcUpdateNoticeUmiPlugin";
+
+module.exports = function (api) {
+  api.describe({
+    key: KEY,
+    config: {
+      schema(joi) {
+        return joi.object({
+          filename: joi.string().default("_version.json"),
+          interval: joi.number().default(5000),
+          keepVersions: joi.number().default(5),
+          publishDescription: joi.string().default(""),
+          isLogout: joi.boolean().default(false),
+          laterInterval: joi.number().default(10 * 60 * 1000),
+          // 文件指向定义
+          versionDir: joi.string().default("/"),
+        });
+      },
+    },
+  });
+
+  // 构建结束后生成 _version.json
+  api.onBuildComplete(({ err }) => {
+    if (err) return;
+
+    const userConfig = api.userConfig[KEY] || {};
+    const options = Object.assign(
+      {
+        filename: "_version.json",
+        keepVersions: 5,
+        publishDescription: "",
+        isLogout: false,
+      },
+      userConfig
+    );
+
+    const outputPath = path.join(api.paths.cwd, "dist");
+    const file = path.join(outputPath, options.filename);
+    const historyFile = path.join(outputPath, "_version-history.json");
+
+    const hash = Date.now();
+    const current = {
+      hash,
+      buildTime: new Date().toLocaleString(),
+      publishDescription: options.publishDescription,
+      isLogout: options.isLogout,
+    };
+
+    fs.writeFileSync(file, JSON.stringify(current, null, 2));
+
+    let history = [];
+    if (fs.existsSync(historyFile)) {
+      try {
+        history = JSON.parse(fs.readFileSync(historyFile, "utf-8"));
+      } catch {
+        console.warn("[XcUpdateNoticeUmi] 历史版本解析失败");
+      }
+    }
+    history.unshift(current);
+    history = history.slice(0, options.keepVersions);
+    fs.writeFileSync(historyFile, JSON.stringify(history, null, 2));
+
+    console.log(`[XcUpdateNoticeUmi] ✅ 生成成功 -> ${file}`);
+  });
+
+  api.addEntryCodeAhead(() => {
+    const userConfig = api.userConfig[KEY] || {};
+    const options = Object.assign(
+      {
+        filename: "_version.json",
+        interval: 5000,
+        laterInterval: 10 * 60 * 1000,
+        versionDir: "/"
+      },
+      userConfig
+    );
+
+    return generateCheckScript(options);
+  });
+};
+
+function generateCheckScript(options) {
+  return `
+    (function(){
+      if(window.__XC_UPDATE_INITED__) return;
+      window.__XC_UPDATE_INITED__ = true;
+      const versionUrl = '${options.versionDir}${options.filename}';
+      const interval = ${options.interval};
+      const laterInterval = ${options.laterInterval};
+      let timer = null;
+      let laterTimer = null;
+      let clientCurrentVersion = null;
+
+      const _xcUpdate = {
+        _callbacks: [],
+        onUpdate(fn, ver) {
+          clientCurrentVersion = ver
+          console.log('[xc-web-update-notice] 监听到版本更新', ver);
+          this._callbacks.push(fn);
+          
+        },
+        updateLater() {
+          if (laterTimer) {
+            clearTimeout(laterTimer);
+            laterTimer = null;
+          }
+          laterTimer = setTimeout(() => {
+            laterTimer = null;
+            checkUpdate();
+          }, laterInterval);
+        }
+      };
+
+      async function checkUpdate() {
+        try {
+          const res = await fetch(versionUrl + '?_=' + Date.now());
+          const data = await res.json();
+          if (clientCurrentVersion != data.hash) {
+            clearInterval(timer);
+            window._xcUpdate._callbacks.forEach(fn => fn({ oldHash: clientCurrentVersion, newHash: data.hash, isLogout: data.isLogout  }));
+          }
+        } catch(e) {
+          console.warn('[xc-web-update-notice] 检查版本失败', e);
+        }
+      }
+      timer = setInterval(checkUpdate, interval);
+      window._xcUpdate = _xcUpdate;
+    })();
+`;
+}
