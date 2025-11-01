@@ -22,12 +22,17 @@ class XcUpdateNoticeWebpackPlugin {
         versionDir: "./",
         // 文件检测文件指向
         checkerDir: "",
+        // 是否是生产环境，非生产环境不检测
+        isProd: true
       },
       options
     );
   }
 
   apply(compiler) {
+    if(!this.options.isProd) {
+      return;
+    }
     compiler.hooks.done.tap("YnUpdateNoticeWeb", (stats) => {
       const hash = stats.hash;
 

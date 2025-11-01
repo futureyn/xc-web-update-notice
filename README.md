@@ -64,6 +64,7 @@ export default defineConfig({
 | `checkerDir` | `string` |  | 版本文件指向（update-checker.js） |
 | `publishDescription` | `string` |  | 本次的发布描述 |
 | `keepVersions` | `string` |  | 保留历史版本数量 |
+| `isProd` | `boolean` | `true` | 是否是生产环境，非生产环境不检测 |
 
 
 ### _xcUpdate
@@ -93,6 +94,7 @@ module.exports = {
                 laterInterval: 20 * 60 * 1000,
                 // versionDir: "/dist/",
                 // checkerDir: "/dist/",
+                isProd: process.env.NODE_ENV === "production",
             })
         );
     }

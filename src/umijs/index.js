@@ -17,6 +17,8 @@ module.exports = function (api) {
           laterInterval: joi.number().default(10 * 60 * 1000),
           // 文件指向定义
           versionDir: joi.string().default("/"),
+          // 非生产环境不进行检查
+          isProd: joi.boolean().default(true),
         });
       },
     },
@@ -33,9 +35,12 @@ module.exports = function (api) {
         keepVersions: 5,
         publishDescription: "",
         isLogout: false,
+        isProd: true,
       },
       userConfig
     );
+
+    if (!options.isProd) return;
 
     const outputPath = path.join(api.paths.cwd, "dist");
     const file = path.join(outputPath, options.filename);
@@ -73,10 +78,12 @@ module.exports = function (api) {
         filename: "_version.json",
         interval: 5000,
         laterInterval: 10 * 60 * 1000,
-        versionDir: "/"
+        versionDir: "/",
+        isProd: true,
       },
       userConfig
     );
+    if (!options.isProd) return "";
 
     return generateCheckScript(options);
   });

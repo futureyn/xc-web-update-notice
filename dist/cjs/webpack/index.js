@@ -29,13 +29,19 @@ var XcUpdateNoticeWebpackPlugin = /*#__PURE__*/function () {
       // version文件指向
       versionDir: "./",
       // 文件检测文件指向
-      checkerDir: ""
+      checkerDir: "",
+      // 是否是生产环境，非生产环境不检测
+      isProd: true
     }, options);
   }
   return _createClass(XcUpdateNoticeWebpackPlugin, [{
     key: "apply",
     value: function apply(compiler) {
       var _this = this;
+      console.log('当前环境===>', this.options);
+      if (!this.options.isProd) {
+        return;
+      }
       compiler.hooks.done.tap("YnUpdateNoticeWeb", function (stats) {
         var hash = stats.hash;
         var outputPath = compiler.options.output.path;
