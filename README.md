@@ -43,6 +43,24 @@ export default defineConfig({
 });
 ```
 
+### ✅ Vite 项目
+```javascript
+// vite.config.ts
+import { defineConfig } from 'vite';
+import XcUpdateNoticeVitePlugin from 'xc-web-update-notice/vite';
+export default defineConfig({
+  plugins: [XcUpdateNoticeVitePlugin({
+    interval: 10000,
+    // 两小时后再次弹窗（毫秒）
+    laterInterval: 200 * 60 * 1000,
+    versionDir: "/dist/",
+    isLogout: true,
+    publishDescription:"修改用户权限",
+    checkerDir: "/dist/" // <script src="/dist/update-checker.js"></script>
+  })]
+})
+```
+
 ### 🧠 运行逻辑说明
 
 插件在打包时会自动注入一段脚本：
@@ -58,13 +76,13 @@ export default defineConfig({
 |------|------|--------|------|
 | `filename` | `string` | `_version.json` | 版本文件名 |
 | `interval` | `number` | `5000` | 检测间隔（毫秒） |
-| `laterInterval` | `number` | `1000 * 60 * 10` | 用户点击“稍后更新”后的延迟时间 |
+| `laterInterval` | `number` | `1000 * 60 * 10` | 用户点击“稍后更新”后的延迟时间（毫秒） |
 | `isLogout` | `boolean` | `false` | 本次构建是否需要退出登录 |
 | `versionDir` | `string` | `./` | 版本文件指向（./_version.json） |
 | `checkerDir` | `string` |  | 版本文件指向（update-checker.js） |
 | `publishDescription` | `string` |  | 本次的发布描述 |
 | `keepVersions` | `string` |  | 保留历史版本数量 |
-| `isProd` | `boolean` | `true` | 是否是生产环境，非生产环境不检测 |
+| `isProd（1.1.0支持）` | `boolean` | `true` | 是否是生产环境，非生产环境不检测 |
 
 
 ### _xcUpdate
@@ -135,5 +153,3 @@ export default () => {
 ### 效果
 ![更新效果](./public/1.png)
 ![检测效果](./public/2.png)
-
-### 即将支持vite版本
