@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+const { createEnvironmentHash } = require("../utils/generate");
 class XcUpdateNoticeWebpackPlugin {
   constructor(options) {
     /**
@@ -23,7 +24,11 @@ class XcUpdateNoticeWebpackPlugin {
         // 文件检测文件指向
         checkerDir: "",
         // 是否是生产环境，非生产环境不检测
-        isProd: true
+        isProd: true,
+        // 版本生成方式
+        versionMode: "hash",
+        // 版本号（versionMode为custom时生效） 
+        version: "1.0.0"
       },
       options
     );
@@ -33,8 +38,8 @@ class XcUpdateNoticeWebpackPlugin {
     if(!this.options.isProd) {
       return;
     }
-    compiler.hooks.done.tap("YnUpdateNoticeWeb", (stats) => {
-      const hash = stats.hash;
+    compiler.hooks.done.tap("YnUpdateNoticeWeb", () => {
+      const hash = createEnvironmentHash(this.options.versionMode, this.options.version) 
 
       const outputPath = compiler.options.output.path;
       const file = path.join(outputPath, this.options.filename);
@@ -118,11 +123,11 @@ class XcUpdateNoticeWebpackPlugin {
       const interval = ${this.options.interval};
       const versionUrl = "${this.options.versionDir}${this.options.filename}";
       let clientCurrentVersion = null;
+      const callbacks = [];
       const _xcUpdate = {
-        _callbacks: [],
         onUpdate(fn, ver) {
           clientCurrentVersion = ver;
-          this._callbacks.push(fn);
+          callbacks.push(fn);
         },
         // 稍后更新
         updateLater() {
@@ -143,7 +148,7 @@ class XcUpdateNoticeWebpackPlugin {
           const data = await res.json();
           if (clientCurrentVersion != data.hash) {
             clearInterval(timer);
-            window._xcUpdate._callbacks.forEach(fn => fn({ oldHash: clientCurrentVersion, newHash: data.hash, isLogout: data.isLogout, publishDescription: data.publishDescription  }));
+            callbacks.forEach(fn => fn({ oldHash: clientCurrentVersion, newHash: data.hash, isLogout: data.isLogout, publishDescription: data.publishDescription  }));
           }
         } catch (e) {
           console.warn("检查版本更新失败", e);

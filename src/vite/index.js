@@ -1,5 +1,6 @@
 import fs from "fs"
 import path from "path"
+import { createEnvironmentHash } from "../utils/generate";
 const _VERSION = '_version.json';
 const _UPDATE_CHECKER = '_update-checker.js';
 const _VERSION_HISTORY = '_version-history.json'
@@ -16,7 +17,11 @@ export default (_ = {}) => {
         // 文件检测名称
         checkerName: _UPDATE_CHECKER,
         historyFile: _VERSION_HISTORY,
-        keepVersions: 10
+        keepVersions: 10,
+        // 版本生成方式
+        versionMode: "hash",
+        // 版本号（versionMode为custom时生效）
+        version:"1.0.0"
     }, _)
     return {
         name: 'rollup-plugin-xc-update-notice',
@@ -26,7 +31,7 @@ export default (_ = {}) => {
             const versionFile = path.resolve(outDir, options.filename);
             const updateChecker = path.resolve(outDir, options.checkerName);
 
-            const hash = Date.now();
+            const hash = createEnvironmentHash(options.versionMode, options.version);
 
             const version = {
                 hash,

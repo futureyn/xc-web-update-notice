@@ -72,17 +72,19 @@ export default defineConfig({
 
 ### api
 
-| 名称 | 类型 | 默认值 | 说明 |
+| 名称 | 类型 | 默认值 | 说明 | 选项 |
 |------|------|--------|------|
-| `filename` | `string` | `_version.json` | 版本文件名 |
-| `interval` | `number` | `5000` | 检测间隔（毫秒） |
-| `laterInterval` | `number` | `1000 * 60 * 10` | 用户点击“稍后更新”后的延迟时间（毫秒） |
-| `isLogout` | `boolean` | `false` | 本次构建是否需要退出登录 |
-| `versionDir` | `string` | `./` | 版本文件指向（./_version.json） |
-| `checkerDir` | `string` |  | 版本文件指向（update-checker.js） |
-| `publishDescription` | `string` |  | 本次的发布描述 |
-| `keepVersions` | `string` |  | 保留历史版本数量 |
-| `isProd（1.1.0支持）` | `boolean` | `true` | 是否是生产环境，非生产环境不检测 |
+| `filename` | `string` | `_version.json` | 版本文件名 | |
+| `interval` | `number` | `5000` | 检测间隔（毫秒） | |
+| `laterInterval` | `number` | `1000 * 60 * 10` | 用户点击“稍后更新”后的延迟时间（毫秒） |  |
+| `isLogout` | `boolean` | `false` | 本次构建是否需要退出登录 | |
+| `versionDir` | `string` | `./` | 版本文件指向（./_version.json） | |
+| `checkerDir` | `string` |  | 版本文件指向（update-checker.js） | |
+| `publishDescription` | `string` |  | 本次的发布描述 | |
+| `keepVersions` | `string` |  | 保留历史版本数量 | |
+| `isProd（v1.1.0支持）` | `boolean` | `true` | 是否是生产环境，非生产环境不检测 | |
+| `versionMode(v1.2.1支持)` | `string` | `hash` | 版本号生成模式 | `hash`,`custom` |
+| `version(v1.2.1支持)` | `string` | `1.0.0` | 版本号（versionMode为custom时生效） |  |
 
 
 ### _xcUpdate

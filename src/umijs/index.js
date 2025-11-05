@@ -1,6 +1,6 @@
 const path = require("path");
 const fs = require("fs");
-
+import { createEnvironmentHash } from "../utils/generate";
 const KEY = "XcUpdateNoticeUmiPlugin";
 
 module.exports = function (api) {
@@ -19,6 +19,10 @@ module.exports = function (api) {
           versionDir: joi.string().default("/"),
           // 非生产环境不进行检查
           isProd: joi.boolean().default(true),
+          // 生成版本号模式
+          versionMode: joi.string().valid("hash", "custom").default("hash"),
+          // 版本号（versionMode为custom时生效）
+          version: joi.string().default("1.0.0"),
         });
       },
     },
@@ -46,7 +50,7 @@ module.exports = function (api) {
     const file = path.join(outputPath, options.filename);
     const historyFile = path.join(outputPath, "_version-history.json");
 
-    const hash = Date.now();
+    const hash = createEnvironmentHash(options.versionMode, options.version);
     const current = {
       hash,
       buildTime: new Date().toLocaleString(),
@@ -100,14 +104,12 @@ function generateCheckScript(options) {
       let timer = null;
       let laterTimer = null;
       let clientCurrentVersion = null;
-
+      const callbacks = [];
       const _xcUpdate = {
-        _callbacks: [],
         onUpdate(fn, ver) {
           clientCurrentVersion = ver
           console.log('[xc-web-update-notice] 监听到版本更新', ver);
-          this._callbacks.push(fn);
-          
+          callbacks.push(fn);
         },
         updateLater() {
           if (laterTimer) {
@@ -127,7 +129,7 @@ function generateCheckScript(options) {
           const data = await res.json();
           if (clientCurrentVersion != data.hash) {
             clearInterval(timer);
-            window._xcUpdate._callbacks.forEach(fn => fn({ oldHash: clientCurrentVersion, newHash: data.hash, isLogout: data.isLogout  }));
+            callbacks.forEach(fn => fn({ oldHash: clientCurrentVersion, newHash: data.hash, isLogout: data.isLogout  }));
           }
         } catch(e) {
           console.warn('[xc-web-update-notice] 检查版本失败', e);

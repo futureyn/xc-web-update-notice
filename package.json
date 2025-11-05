@@ -1,6 +1,6 @@
 {
   "name": "xc-web-update-notice",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "前端版本更新通知，支持webpack4/webpack5/umijs/vite",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
