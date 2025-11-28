@@ -1,6 +1,6 @@
 const path = require("path");
 const fs = require("fs");
-import { createEnvironmentHash } from "../utils/generate";
+const { createEnvironmentHash } = require("../utils/generate");
 const KEY = "XcUpdateNoticeUmiPlugin";
 
 module.exports = function (api) {

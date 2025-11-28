@@ -27,19 +27,22 @@ class XcUpdateNoticeWebpackPlugin {
         isProd: true,
         // 版本生成方式
         versionMode: "hash",
-        // 版本号（versionMode为custom时生效） 
-        version: "1.0.0"
+        // 版本号（versionMode为custom时生效）
+        version: "1.0.0",
       },
       options
     );
   }
 
   apply(compiler) {
-    if(!this.options.isProd) {
+    if (!this.options.isProd) {
       return;
     }
     compiler.hooks.done.tap("YnUpdateNoticeWeb", () => {
-      const hash = createEnvironmentHash(this.options.versionMode, this.options.version) 
+      const hash = createEnvironmentHash(
+        this.options.versionMode,
+        this.options.version
+      );
 
       const outputPath = compiler.options.output.path;
       const file = path.join(outputPath, this.options.filename);
