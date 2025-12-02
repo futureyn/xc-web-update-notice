@@ -98,11 +98,10 @@ module.exports = function (api) {
     history = history.slice(0, options.keepVersions);
     fs.writeFileSync(historyFile, JSON.stringify(history, null, 2));
 
-    console.log(`v1.2.2[XcUpdateNoticeUmi] ✅ 生成成功 -> ${file}`);
+    console.log(`[XcUpdateNoticeUmi] ✅ 生成成功 -> ${file}`);
   });
 
   api.addEntryCodeAhead(() => {
-    console.log("222", JSON.stringify(history));
     const userConfig = api.userConfig[KEY] || {};
     const options = Object.assign(
       {
@@ -120,12 +119,11 @@ module.exports = function (api) {
   });
 };
 
-function generateCheckScript(options, historyVersion) {
+function generateCheckScript(options) {
   return `
     (function(){
       if(window.__XC_UPDATE_INITED__) return;
       window.__XC_UPDATE_INITED__ = true;
-      
       const versionUrl = '${options.versionDir}${options.filename}';
       // 用户点击稍后更新后存储的版本信息，落后的版本
       let laterInfo = []
@@ -173,6 +171,8 @@ function generateCheckScript(options, historyVersion) {
           const data = await res.json();
           latestVersion = data.hash;
           lastIsLogout = data.isLogout;
+
+          // 正常发布更新
           if (clientCurrentVersion != data.hash && !laterInfo.length) {
             if (isDialog) {
               return;
@@ -181,6 +181,7 @@ function generateCheckScript(options, historyVersion) {
             callbacks.forEach(fn => fn({ oldHash: clientCurrentVersion, newHash: data.hash, isLogout: data.isLogout  }));
           }
 
+          // 稍后更新中的时候，再次发布新版本时更新
           if(laterInfo.length && laterInfo[laterInfo.length-1].version !== data.hash) {
             if (isDialog) {
               return;
