@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Vite/UmiJS/Webpack**: 支持自定义版本号（custom version numbers）。
 
-## [1.2.2] - 2025-12-01
+## [1.2.2] - 2025-12-02
 
 ### Added
 
