@@ -160,3 +160,15 @@ export default () => {
 
 ![更新效果](./public/1.png)
 ![检测效果](./public/2.png)
+
+建议下载下相关包，查看示例
+
+## 📦 相关包
+
+- [xc-web-update-notice-webpack](https://www.npmjs.com/package/xc-web-update-notice-webpack) - Webpack 版本
+- [xc-web-update-notice-vite](https://www.npmjs.com/package/xc-web-update-notice-vite) - Vite 版本
+- [xc-web-update-notice-umijs](https://www.npmjs.com/package/xc-web-update-notice-umijs) - Umijs 版本
+
+## 📄 License
+
+ISC
