@@ -1,6 +1,6 @@
 {
   "name": "xc-web-update-notice",
-  "version": "1.2.1",
+  "version": "1.2.3",
   "description": "前端版本更新通知，支持webpack4/webpack5/umijs/vite",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
@@ -36,12 +36,21 @@
   "scripts": {
     "build:cjs": "babel src --out-dir dist/cjs --env-name cjs --extensions .js,.ts --out-file-extension .js",
     "build:esm": "babel src --out-dir dist/esm --env-name esm --extensions .js,.ts --out-file-extension .js",
-    "build": "npm run build:cjs && npm run build:esm"
+    "build": "npm run build:cjs && npm run build:esm",
+    "build:umijs": "npm --workspace=packages/umijs run build",
+    "build:webpack": "npm --workspace=packages/webpack run build",
+    "build:vite": "npm --workspace=packages/vite run build",
+    "publish:umijs": "cd packages/umijs && npm publish",
+    "publish:webpack": "cd packages/webpack && npm publish",
+    "publish:vite": "cd packages/vite && npm publish",
+    "publish:all": "npm run publish:umijs && npm run publish:webpack && npm run publish:vite"
   },
   "author": "nnn",
   "license": "ISC",
   "dependencies": {
-    "webpack": "^5.102.1"
+    "crypto": "^1.0.1",
+    "webpack": "^5.102.1",
+    "xc-web-update-notice-umijs": "^1.2.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.28.3",

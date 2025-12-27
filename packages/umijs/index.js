@@ -1,13 +1,29 @@
 const path = require("path");
 const fs = require("fs");
-const { createEnvironmentHash } = require("../utils/generate");
+const { createHash } = require("crypto");
 const KEY = "XcUpdateNoticeUmiPlugin";
 
+function createEnvironmentHash(mode, version) {
+  if (mode === "hash") {
+    const hash = createHash("md5");
+    hash.update(Date.now().toString());
+    const result = hash.digest("hex");
+    return result;
+  } else if (mode === "custom") {
+    return version;
+  } else {
+    return "1.0.0";
+  }
+}
+
 module.exports = function (api) {
+  let history = [];
   api.describe({
     key: KEY,
     config: {
       schema(joi) {
+        history = getHistoryVersion();
+
         return joi.object({
           filename: joi.string().default("_version.json"),
           interval: joi.number().default(5000),
@@ -28,6 +44,22 @@ module.exports = function (api) {
     },
   });
 
+  // 获取历史版本
+  const getHistoryVersion = () => {
+    const outputPath = path.join(api.paths.cwd, "dist");
+    const historyFile = path.join(outputPath, "_version-history.json");
+    let history = [];
+    if (fs.existsSync(historyFile)) {
+      try {
+        // 读取之前的上线版本信息
+        history = JSON.parse(fs.readFileSync(historyFile, "utf-8"));
+      } catch {
+        console.warn("[XcUpdateNoticeUmi] 历史版本解析失败");
+      }
+    }
+    return history;
+  };
+
   // 构建结束后生成 _version.json
   api.onBuildComplete(({ err }) => {
     if (err) return;
@@ -40,10 +72,12 @@ module.exports = function (api) {
         publishDescription: "",
         isLogout: false,
         isProd: true,
+        versionMode: "hash",
       },
       userConfig
     );
 
+    // 非生产环境不检测
     if (!options.isProd) return;
 
     const outputPath = path.join(api.paths.cwd, "dist");
@@ -60,15 +94,8 @@ module.exports = function (api) {
 
     fs.writeFileSync(file, JSON.stringify(current, null, 2));
 
-    let history = [];
-    if (fs.existsSync(historyFile)) {
-      try {
-        history = JSON.parse(fs.readFileSync(historyFile, "utf-8"));
-      } catch {
-        console.warn("[XcUpdateNoticeUmi] 历史版本解析失败");
-      }
-    }
     history.unshift(current);
+
     history = history.slice(0, options.keepVersions);
     fs.writeFileSync(historyFile, JSON.stringify(history, null, 2));
 
@@ -89,7 +116,7 @@ module.exports = function (api) {
     );
     if (!options.isProd) return "";
 
-    return generateCheckScript(options);
+    return generateCheckScript(options, history);
   });
 };
 
@@ -99,16 +126,25 @@ function generateCheckScript(options) {
       if(window.__XC_UPDATE_INITED__) return;
       window.__XC_UPDATE_INITED__ = true;
       const versionUrl = '${options.versionDir}${options.filename}';
+      // 用户点击稍后更新后存储的版本信息，落后的版本
+      let laterInfo = []
+      // 是否处于弹窗中
+      let isDialog = false;
+      // 最新版本
+      let latestVersion = null;
+      // 落后版本是否需要退出登录
+      let lastIsLogout = false;
       const interval = ${options.interval};
       const laterInterval = ${options.laterInterval};
       let timer = null;
       let laterTimer = null;
+      // 客户端版本
       let clientCurrentVersion = null;
       const callbacks = [];
       const _xcUpdate = {
         onUpdate(fn, ver) {
           clientCurrentVersion = ver
-          console.log('[xc-web-update-notice] 监听到版本更新', ver);
+          console.log('[xc-web-update-notice] 当前版本为', ver);
           callbacks.push(fn);
         },
         updateLater() {
@@ -116,9 +152,16 @@ function generateCheckScript(options) {
             clearTimeout(laterTimer);
             laterTimer = null;
           }
+          laterInfo.push({
+            version: latestVersion,
+            isLater: true,
+            isLogout: lastIsLogout
+          })
+          if(isDialog) {
+            isDialog = false
+          }
           laterTimer = setTimeout(() => {
             laterTimer = null;
-            checkUpdate();
           }, laterInterval);
         }
       };
@@ -127,9 +170,27 @@ function generateCheckScript(options) {
         try {
           const res = await fetch(versionUrl + '?_=' + Date.now());
           const data = await res.json();
-          if (clientCurrentVersion != data.hash) {
-            clearInterval(timer);
+          latestVersion = data.hash;
+          lastIsLogout = data.isLogout;
+
+          // 正常发布更新
+          if (clientCurrentVersion != data.hash && !laterInfo.length) {
+            if (isDialog) {
+              return;
+            }
+            isDialog = true;
             callbacks.forEach(fn => fn({ oldHash: clientCurrentVersion, newHash: data.hash, isLogout: data.isLogout  }));
+          }
+
+          // 稍后更新中的时候，再次发布新版本时更新
+          if(laterInfo.length && laterInfo[laterInfo.length-1].version !== data.hash) {
+            if (isDialog) {
+              return;
+            }
+            isDialog = true;
+            // 落后版本是否有需要退出登录的
+            const isLogout = laterInfo.find(item => item.isLogout)?.isLogout;
+            callbacks.forEach(fn => fn({ oldHash: clientCurrentVersion, newHash: data.hash, isLogout: data.isLogout || isLogout  }));
           }
         } catch(e) {
           console.warn('[xc-web-update-notice] 检查版本失败', e);

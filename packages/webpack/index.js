@@ -1,6 +1,18 @@
+const { createHash } = require("crypto");
 const fs = require("fs");
 const path = require("path");
-const { createEnvironmentHash } = require("../utils/generate");
+function createEnvironmentHash(mode, version) {
+  if (mode === "hash") {
+    const hash = createHash("md5");
+    hash.update(Date.now().toString());
+    const result = hash.digest("hex");
+    return result;
+  } else if (mode === "custom") {
+    return version;
+  } else {
+    return "1.0.0";
+  }
+}
 class XcUpdateNoticeWebpackPlugin {
   constructor(options) {
     /**
@@ -38,7 +50,7 @@ class XcUpdateNoticeWebpackPlugin {
     if (!this.options.isProd) {
       return;
     }
-    compiler.hooks.done.tap("YnUpdateNoticeWeb", () => {
+    compiler.hooks.done.tap("XcUpdateNoticeWebpack", () => {
       const hash = createEnvironmentHash(
         this.options.versionMode,
         this.options.version
@@ -84,7 +96,7 @@ class XcUpdateNoticeWebpackPlugin {
     });
 
     // 监测客户端是否构建了html
-    compiler.hooks.compilation.tap("XcUpdateNoticeWeb", (compilation) => {
+    compiler.hooks.compilation.tap("XcUpdateNoticeWebpack", (compilation) => {
       const plugin = compiler.options.plugins.find(
         (p) => p.constructor && p.constructor.name === "HtmlWebpackPlugin"
       );
@@ -93,7 +105,7 @@ class XcUpdateNoticeWebpackPlugin {
       if (plugin.constructor.getHooks) {
         const hook = plugin.constructor.getHooks(compilation).beforeEmit;
 
-        hook.tapAsync("XcUpdateNoticeWeb", (data, cb) => {
+        hook.tapAsync("XcUpdateNoticeWebpack", (data, cb) => {
           const injectTag = `<script src="${this.options.checkerDir}_update-checker.js"></script>`;
           data.html = data.html.replace("</body>", `${injectTag}</body>`);
           cb(null, data);
@@ -101,7 +113,7 @@ class XcUpdateNoticeWebpackPlugin {
       } else if (compilation.hooks.htmlWebpackPluginBeforeHtmlProcessing) {
         // webpack 3.x
         compilation.hooks.htmlWebpackPluginBeforeHtmlProcessing.tapAsync(
-          "XcUpdateNoticeWeb",
+          "XcUpdateNoticeWebpack",
           (data, cb) => {
             const injectTag = `<script src="${this.options.checkerDir}_update-checker.js"></script>`;
             if (!data.html.includes(injectTag)) {
@@ -112,7 +124,7 @@ class XcUpdateNoticeWebpackPlugin {
         );
       } else {
         console.warn(
-          "[XcUpdateNoticeWeb] 未检测到 HtmlWebpackPlugin hooks，跳过注入"
+          "[XcUpdateNoticeWebpack] 未检测到 HtmlWebpackPlugin hooks，跳过注入"
         );
       }
     });
@@ -127,21 +139,36 @@ class XcUpdateNoticeWebpackPlugin {
       const versionUrl = "${this.options.versionDir}${this.options.filename}";
       let clientCurrentVersion = null;
       const callbacks = [];
+      // 用户点击稍后更新后存储的版本信息，落后的版本
+      let laterInfo = []
+      // 是否处于弹窗中
+      let isDialog = false;
+      // 最新版本
+      let latestVersion = null;
+      // 落后版本是否需要退出登录
+      let lastIsLogout = false;
       const _xcUpdate = {
         onUpdate(fn, ver) {
           clientCurrentVersion = ver;
+          console.log('[xc-web-update-notice] 当前版本为', ver);
           callbacks.push(fn);
         },
         // 稍后更新
         updateLater() {
           if(laterTimer) {
-            clearInterval(laterTimer);
-            return;
+            clearTimeout(laterTimer);
+            laterTimer = null;
+          }
+          laterInfo.push({
+            version: latestVersion,
+            isLater: true,
+            isLogout: lastIsLogout
+          })
+          if(isDialog) {
+            isDialog = false
           }
           laterTimer = setTimeout(() => {
-            clearInterval(laterTimer);
             laterTimer = null;
-            checkUpdate();
           }, ${this.options.laterInterval || 10 * 60 * 1000});
         }
       };
@@ -149,9 +176,27 @@ class XcUpdateNoticeWebpackPlugin {
         try {
           const res = await fetch(versionUrl + "?_=" + Date.now());
           const data = await res.json();
-          if (clientCurrentVersion != data.hash) {
-            clearInterval(timer);
+          latestVersion = data.hash;
+          lastIsLogout = data.isLogout;
+
+          // 正常发布更新
+          if (clientCurrentVersion != data.hash && !laterInfo.length) {
+            if (isDialog) {
+              return;
+            }
+            isDialog = true;
             callbacks.forEach(fn => fn({ oldHash: clientCurrentVersion, newHash: data.hash, isLogout: data.isLogout, publishDescription: data.publishDescription  }));
+          }
+
+          // 稍后更新中的时候，再次发布新版本时更新
+          if(laterInfo.length && laterInfo[laterInfo.length-1].version !== data.hash) {
+            if (isDialog) {
+              return;
+            }
+            isDialog = true;
+            // 落后版本是否有需要退出登录的
+            const isLogout = laterInfo.find(item => item.isLogout)?.isLogout;
+            callbacks.forEach(fn => fn({ oldHash: clientCurrentVersion, newHash: data.hash, isLogout: data.isLogout || isLogout  }));
           }
         } catch (e) {
           console.warn("检查版本更新失败", e);

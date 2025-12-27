@@ -1,12 +1,45 @@
 {
   "name": "xc-web-update-notice-vite",
   "version": "1.0.0",
-  "main": "index.js",
-  "devDependencies": {},
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "description": "前端版本更新通知 - Vite 插件",
+  "main": "../../dist/cjs/vite/index.js",
+  "module": "../../dist/esm/vite/index.js",
+  "types": "../../dist/esm/vite/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "../../dist/cjs/vite/index.js",
+      "import": "../../dist/esm/vite/index.js"
+    }
   },
-  "author": "",
+  "files": [
+    "../../dist/cjs/vite",
+    "../../dist/esm/vite"
+  ],
+  "keywords": [
+    "vite",
+    "web版本更新通知",
+    "version-update"
+  ],
+  "homepage": "https://github.com/futureyn/xc-web-update-notice",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/futureyn/xc-web-update-notice.git",
+    "directory": "packages/vite"
+  },
+  "bugs": {
+    "url": "https://github.com/futureyn/xc-web-update-notice/issues"
+  },
+  "author": "nnn",
   "license": "ISC",
-  "description": ""
+  "scripts": {
+    "build": "babel index.js --out-dir ../../dist/cjs/vite --env-name cjs --out-file-extension .js && babel index.js --out-dir ../../dist/esm/vite --env-name esm --out-file-extension .js"
+  },
+  "peerDependencies": {
+    "vite": "^2.0.0 || ^3.0.0 || ^4.0.0 || ^5.0.0"
+  },
+  "peerDependenciesMeta": {
+    "vite": {
+      "optional": false
+    }
+  }
 }

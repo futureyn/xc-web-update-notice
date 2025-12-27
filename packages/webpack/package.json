@@ -1,20 +1,45 @@
 {
   "name": "xc-web-update-notice-webpack",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "devDependencies": {},
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "description": "前端版本更新通知 - Webpack 插件",
+  "main": "../../dist/cjs/webpack/index.js",
+  "module": "../../dist/esm/webpack/index.js",
+  "types": "../../dist/esm/webpack/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "../../dist/cjs/webpack/index.js",
+      "import": "../../dist/esm/webpack/index.js"
+    }
   },
+  "files": [
+    "../../dist/cjs/webpack",
+    "../../dist/esm/webpack"
+  ],
+  "keywords": [
+    "webpack",
+    "web版本更新通知",
+    "version-update"
+  ],
+  "homepage": "https://github.com/futureyn/xc-web-update-notice",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/futureyn/xc-web-update-notice.git"
+    "url": "git+https://github.com/futureyn/xc-web-update-notice.git",
+    "directory": "packages/webpack"
   },
-  "author": "",
-  "license": "ISC",
   "bugs": {
     "url": "https://github.com/futureyn/xc-web-update-notice/issues"
   },
-  "homepage": "https://github.com/futureyn/xc-web-update-notice#readme"
+  "author": "nnn",
+  "license": "ISC",
+  "scripts": {
+    "build": "babel index.js --out-dir ../../dist/cjs/webpack --env-name cjs --out-file-extension .js && babel index.js --out-dir ../../dist/esm/webpack --env-name esm --out-file-extension .js"
+  },
+  "peerDependencies": {
+    "webpack": "^4.0.0 || ^5.0.0"
+  },
+  "peerDependenciesMeta": {
+    "webpack": {
+      "optional": false
+    }
+  }
 }

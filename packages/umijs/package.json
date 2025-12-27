@@ -1,12 +1,45 @@
 {
   "name": "xc-web-update-notice-umijs",
   "version": "1.0.0",
-  "main": "index.js",
-  "devDependencies": {},
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "description": "前端版本更新通知 - UmiJS 插件",
+  "main": "../../dist/cjs/umijs/index.js",
+  "module": "../../dist/esm/umijs/index.js",
+  "types": "../../dist/esm/umijs/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "../../dist/cjs/umijs/index.js",
+      "import": "../../dist/esm/umijs/index.js"
+    }
   },
-  "author": "",
+  "files": [
+    "../../dist/cjs/umijs",
+    "../../dist/esm/umijs"
+  ],
+  "keywords": [
+    "umijs",
+    "web版本更新通知",
+    "version-update"
+  ],
+  "homepage": "https://github.com/futureyn/xc-web-update-notice",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/futureyn/xc-web-update-notice.git",
+    "directory": "packages/umijs"
+  },
+  "bugs": {
+    "url": "https://github.com/futureyn/xc-web-update-notice/issues"
+  },
+  "author": "nnn",
   "license": "ISC",
-  "description": ""
+  "scripts": {
+    "build": "babel index.js --out-dir ../../dist/cjs/umijs --env-name cjs --out-file-extension .js && babel index.js --out-dir ../../dist/esm/umijs --env-name esm --out-file-extension .js"
+  },
+  "peerDependencies": {
+    "umi": "^3.0.0 || ^4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "umi": {
+      "optional": false
+    }
+  }
 }
