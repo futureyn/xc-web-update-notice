@@ -1,19 +1,17 @@
 {
   "name": "xc-web-update-notice-umijs",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "前端版本更新通知 - UmiJS 插件",
-  "main": "../../dist/cjs/umijs/index.js",
-  "module": "../../dist/esm/umijs/index.js",
-  "types": "../../dist/esm/umijs/index.d.ts",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
   "exports": {
     ".": {
-      "require": "../../dist/cjs/umijs/index.js",
-      "import": "../../dist/esm/umijs/index.js"
+      "require": "./dist/cjs/index.js",
+      "import": "./dist/esm/index.js"
     }
   },
   "files": [
-    "../../dist/cjs/umijs",
-    "../../dist/esm/umijs"
+    "dist"
   ],
   "keywords": [
     "umijs",
@@ -32,7 +30,7 @@
   "author": "nnn",
   "license": "ISC",
   "scripts": {
-    "build": "babel index.js --out-dir ../../dist/cjs/umijs --env-name cjs --out-file-extension .js && babel index.js --out-dir ../../dist/esm/umijs --env-name esm --out-file-extension .js"
+    "build": "babel index.js --out-dir dist/cjs --env-name cjs --out-file-extension .js && babel index.js --out-dir dist/esm --env-name esm --out-file-extension .js"
   },
   "peerDependencies": {
     "umi": "^3.0.0 || ^4.0.0"

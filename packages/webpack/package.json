@@ -2,18 +2,16 @@
   "name": "xc-web-update-notice-webpack",
   "version": "1.0.0",
   "description": "前端版本更新通知 - Webpack 插件",
-  "main": "../../dist/cjs/webpack/index.js",
-  "module": "../../dist/esm/webpack/index.js",
-  "types": "../../dist/esm/webpack/index.d.ts",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
   "exports": {
     ".": {
-      "require": "../../dist/cjs/webpack/index.js",
-      "import": "../../dist/esm/webpack/index.js"
+      "require": "./dist/cjs/index.js",
+      "import": "./dist/esm/index.js"
     }
   },
   "files": [
-    "../../dist/cjs/webpack",
-    "../../dist/esm/webpack"
+    "dist"
   ],
   "keywords": [
     "webpack",
@@ -32,7 +30,7 @@
   "author": "nnn",
   "license": "ISC",
   "scripts": {
-    "build": "babel index.js --out-dir ../../dist/cjs/webpack --env-name cjs --out-file-extension .js && babel index.js --out-dir ../../dist/esm/webpack --env-name esm --out-file-extension .js"
+    "build": "babel index.js --out-dir dist/cjs --env-name cjs --out-file-extension .js && babel index.js --out-dir dist/esm --env-name esm --out-file-extension .js"
   },
   "peerDependencies": {
     "webpack": "^4.0.0 || ^5.0.0"

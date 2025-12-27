@@ -40,7 +40,7 @@ export default (_ = {}) => {
         name: 'rollup-plugin-xc-update-notice',
         apply: 'build',
         closeBundle() {
-            if(!isProd) return;
+            if(!options.isProd) return;
             const outDir = options.outDir || "dist";
             const versionFile = path.resolve(outDir, options.filename);
             const updateChecker = path.resolve(outDir, options.checkerName);
@@ -63,7 +63,7 @@ export default (_ = {}) => {
 
         // html转换插入
         transformIndexHtml(html) {
-            if(!isProd) return;
+            if(!options.isProd) return;
             const checkerScript = `<script src="${options.checkerDir}${options.checkerName}"></script>`
             const replaceHtml = html.replace('</body>', checkerScript + '\n' + '</body>')
             return replaceHtml
@@ -152,6 +152,6 @@ const generateCheckerScript = (options) => {
       }
       window._xcUpdate = xcUpdate;
       timer = setInterval(checkUpdate, interval);
-      console.log("[xc-web-update-notice] Vite 启动版本检测");
+      console.log("[xc-web-update-notice-vite] 启动版本检测");
     })()`
 }

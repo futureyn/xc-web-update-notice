@@ -204,7 +204,7 @@ class XcUpdateNoticeWebpackPlugin {
       }
       window._xcUpdate = _xcUpdate;
       timer = setInterval(checkUpdate, interval);
-      console.log("[xc-web-update-notice] Webpack 启动版本检测");
+      console.log("[xc-web-update-notice-webpack] 启动版本检测");
     })()`;
   }
 }
