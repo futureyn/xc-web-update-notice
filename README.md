@@ -165,9 +165,9 @@ export default () => {
 
 ## 📦 相关包
 
-- [xc-web-update-notice-webpack](https://www.npmjs.com/package/xc-web-update-notice-webpack) - Webpack 版本
-- [xc-web-update-notice-vite](https://www.npmjs.com/package/xc-web-update-notice-vite) - Vite 版本
-- [xc-web-update-notice-umijs](https://www.npmjs.com/package/xc-web-update-notice-umijs) - Umijs 版本
+- [xc-web-update-notice-webpack](https://github.com/futureyn/xc-web-update-notice/tree/main/packages/webpack) - Webpack 版本
+- [xc-web-update-notice-vite](https://github.com/futureyn/xc-web-update-notice/tree/main/packages/vite) - Vite 版本
+- [xc-web-update-notice-umijs](https://github.com/futureyn/xc-web-update-notice/tree/main/packages/umijs) - Umijs 版本
 
 ## 📄 License
 
