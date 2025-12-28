@@ -169,10 +169,12 @@ class XcUpdateNoticeWebpackPlugin {
           }
           laterTimer = setTimeout(() => {
             laterTimer = null;
+            checkUpdate(true);
           }, ${this.options.laterInterval || 10 * 60 * 1000});
         }
       };
-      async function checkUpdate() {
+      // laterEnd： 稍后更新结束
+      async function checkUpdate(isLaterEnd) {
         try {
           const res = await fetch(versionUrl + "?_=" + Date.now());
           const data = await res.json();
@@ -180,7 +182,7 @@ class XcUpdateNoticeWebpackPlugin {
           lastIsLogout = data.isLogout;
 
           // 正常发布更新
-          if (clientCurrentVersion != data.hash && !laterInfo.length) {
+          if ((clientCurrentVersion != data.hash && !laterInfo.length) || isLaterEnd) {
             if (isDialog) {
               return;
             }
@@ -197,6 +199,7 @@ class XcUpdateNoticeWebpackPlugin {
             // 落后版本是否有需要退出登录的
             const isLogout = laterInfo.find(item => item.isLogout)?.isLogout;
             callbacks.forEach(fn => fn({ oldHash: clientCurrentVersion, newHash: data.hash, isLogout: data.isLogout || isLogout  }));
+            laterInfo = [];
           }
         } catch (e) {
           console.warn("检查版本更新失败", e);

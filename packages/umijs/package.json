@@ -1,6 +1,6 @@
 {
   "name": "xc-web-update-notice-umijs",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "前端版本更新通知 - UmiJS 插件",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
