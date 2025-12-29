@@ -1,6 +1,6 @@
-import fs from "fs"
-import path from "path"
-import { createHash } from "crypto";
+const {createHash} = require("crypto");
+const path = require("path");
+const fs = require("fs");
 const _VERSION = '_version.json';
 const _UPDATE_CHECKER = '_update-checker.js';
 const _VERSION_HISTORY = '_version-history.json'
@@ -16,7 +16,7 @@ function createEnvironmentHash(mode, version) {
     return "1.0.0";
   }
 }
-export default (_ = {}) => {
+module.exports = (_ = {}) => {
     const options = Object.assign({
         isLogout: false,
         versionDir: "",
