@@ -4,6 +4,85 @@ const fs = require("fs");
 const _VERSION = '_version.json';
 const _UPDATE_CHECKER = '_update-checker.js';
 const _VERSION_HISTORY = '_version-history.json'
+const modalS = require('./modal')
+
+const modalCss = `
+    .rt {
+        top: 20px;
+        right: -340px;
+    }
+
+    .rb {
+        bottom: 20px;
+        right: -340px;
+    }
+
+    .lt {
+        top: 20px;
+        left: -340px;
+    }
+
+    .lb {
+        bottom: 20px;
+        left: -340px;
+    }
+
+    .__vite-xc-web-update-notice {
+        width: 300px;
+        background-color: white;
+        box-shadow: 0 0 10px #ccc;
+        border-radius: 6px;
+        position: fixed;
+        padding: 14px;
+        transition: all 0.2s ease;
+        z-index: 9999;
+    }
+
+    .__vite-xc-web-update-notice .__vite-xc-web-update-notice_title {
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    .__vite-xc-web-update-notice .__vite-xc-web-update-notice_content {
+        margin: 0; 
+        margin-top: 4px;
+    }
+
+    .__vite-xc-web-update-notice .__vite-xc-web-update-notice_footer {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 10px;
+        font-size: 14px;
+    }
+
+    .__vite-xc-web-update-notice .__vite-xc-web-update-notice_footer button {
+        border: none;
+        background-color: #409eff;
+        color: white;
+        padding: 4px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-left: 10px;
+        outline: none;
+    }
+
+    .__vite-xc-web-update-notice .__vite-xc-web-update-notice_footer button.__vite-xc-web-update-notice_footer_dismiss {
+        background-color: #909399;
+    }
+
+    .__vite-xc-web-update-notice .__vite-xc-web-update-notice_footer button .__vite-xc-web-update-notice_footer_later_update {
+        background-color: #909399;
+    }
+
+    .__vite-xc-web-update-notice .__vite-xc-web-update-notice_footer button.__vite-xc-web-update-notice_footer_update {
+        background-color: #67c23a;
+    }
+
+    .__vite-xc-web-update-notice .__vite-xc-web-update-notice_footer button:hover {
+        opacity: 0.8;
+    }
+`
+
 function createEnvironmentHash(mode, version) {
   if (mode === "hash") {
     const hash = createHash("md5");
@@ -28,14 +107,28 @@ module.exports = (_ = {}) => {
         filename: _VERSION,
         // 文件检测名称
         checkerName: _UPDATE_CHECKER,
+        customModalAttrs: {
+            placement: 'rt'
+        },
         historyFile: _VERSION_HISTORY,
         keepVersions: 10,
         // 版本生成方式
         versionMode: "hash",
         // 版本号（versionMode为custom时生效）
         version:"1.0.0",
-        isProd: true
+        isProd: true,
+        // 是否使用默认弹窗
+        useDefaultModal: false,
+        // 自定义弹窗css文件名
+        customModalCssName: "_use-default-modal-css.css",
+        // 自定义弹窗文件名
+        customModalHTMLName: "_use-default-modal-html.js",
+        // 客户端版本缓存 名称，默认为_version
+        customVersionName: '_version'
     }, _)
+
+    let appendHtml = []
+
     return {
         name: 'rollup-plugin-xc-update-notice',
         apply: 'build',
@@ -44,9 +137,9 @@ module.exports = (_ = {}) => {
             const outDir = options.outDir || "dist";
             const versionFile = path.resolve(outDir, options.filename);
             const updateChecker = path.resolve(outDir, options.checkerName);
-
+            const linkCss = path.resolve(outDir, options.customModalCssName);
             const hash = createEnvironmentHash(options.versionMode, options.version);
-
+            const modalHTML = path.resolve(outDir, options.customModalHTMLName)
             const version = {
                 hash,
                 buildTime: new Date().toLocaleString(),
@@ -59,14 +152,37 @@ module.exports = (_ = {}) => {
 
             // 写入_update-checker.js
             fs.writeFileSync(updateChecker, generateCheckerScript(options));
+
+            fs.writeFileSync(linkCss, modalCss);
+            fs.writeFileSync(modalHTML, modalS(options.customModalAttrs, options))
         },
 
-        // html转换插入
-        transformIndexHtml(html) {
+        transformIndexHtml() {
             if(!options.isProd) return;
-            const checkerScript = `<script src="${options.checkerDir}${options.checkerName}"></script>`
-            const replaceHtml = html.replace('</body>', checkerScript + '\n' + '</body>')
-            return replaceHtml
+            return [
+                {
+                    tag: "script",
+                    injectTo: 'body',
+                    attrs: {
+                        src: `${options.checkerDir}${options.checkerName}`
+                    }
+                },
+                {
+                    tag: "script",
+                    injectTo: 'body',
+                    attrs: {
+                        src: `${options.checkerDir}${options.customModalHTMLName}`
+                    }
+                },
+                {
+                    tag: "link",
+                    attrs: {
+                        rel: 'stylesheet',
+                        href: `${options.checkerDir}${options.customModalCssName}`
+                    },
+                    injectTo: "head-prepend"
+                },
+            ]
         }
     }
 }
@@ -83,7 +199,7 @@ const generateCheckerScript = (options) => {
         // 获取版本文件
         const versionUrl = "${options.versionDir}${options.filename}"
         // 客户端版本
-        let clientCurrentVersion = null;
+        let clientCurrentVersion = window.localStorage.getItem('${options.customVersionName}');
         // 回调函数合集
         const callbacks = [];
         // 用户点击稍后更新后存储的版本信息，落后的版本
@@ -94,11 +210,27 @@ const generateCheckerScript = (options) => {
         let latestVersion = null;
         // 落后版本是否需要退出登录
         let lastIsLogout = false;
+        
         // 注入全局对象
         const xcUpdate = {
+            _laterInfo() {
+                return laterInfo
+            },
+            // 自定义弹窗设置语言
+            setModalLocal({title, content}) {
+                if(${!options.useDefaultModal}) return
+                if(title) {
+                    const modalEleTitle = document.getElementsByClassName("__vite-xc-web-update-notice_title");
+                    modalEleTitle[0].innerHTML = title
+                }
+                
+                if(content) {
+                    const modalEleContent = document.getElementsByClassName("__vite-xc-web-update-notice_content");
+                    modalEleContent[0].innerHTML = content
+                }
+            },
             onUpdate(fn, ver) {
                 clientCurrentVersion = ver;
-                console.log('[xc-web-update-notice] 当前版本为', ver);
                 callbacks.push(fn)
             },
             // 稍后更新
@@ -135,6 +267,16 @@ const generateCheckerScript = (options) => {
                         return;
                     }
                     isDialog = true;
+                    if(${options.useDefaultModal}) {
+                        const mdoalEle = document.getElementById("__vite-xc-web-update-notice");
+                        if(${['rb', 'rt'].includes(options.customModalAttrs.placement)}) {
+                            mdoalEle.style.right = '20px'
+                        }
+
+                        if(${['lt', 'lb'].includes(options.customModalAttrs.placement)}) {
+                            mdoalEle.style.left = '20px'
+                        }
+                    }
                     callbacks.forEach(fn => fn({ oldHash: clientCurrentVersion, newHash: data.hash, isLogout: data.isLogout, publishDescription: data.publishDescription  }));
                 }
 
@@ -144,6 +286,16 @@ const generateCheckerScript = (options) => {
                         return;
                     }
                     isDialog = true;
+                    if(${options.useDefaultModal}) {
+                        const mdoalEle = document.getElementById("__vite-xc-web-update-notice");
+                        if(${['rb', 'rt'].includes(options.customModalAttrs.placement)}) {
+                            mdoalEle.style.right = '20px'
+                        }
+
+                        if(${['lt', 'lb'].includes(options.customModalAttrs.placement)}) {
+                            mdoalEle.style.left = '20px'
+                        }
+                    }
                     // 落后版本是否有需要退出登录的
                     const isLogout = laterInfo.find(item => item.isLogout)?.isLogout;
                     callbacks.forEach(fn => fn({ oldHash: clientCurrentVersion, newHash: data.hash, isLogout: data.isLogout || isLogout  }));

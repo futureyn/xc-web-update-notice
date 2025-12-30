@@ -1,6 +1,6 @@
 {
   "name": "xc-web-update-notice-vite",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "前端版本更新通知 - Vite 插件",
   "main": "./dist/index.js",
   "exports": {
@@ -28,7 +28,7 @@
   "author": "nnn",
   "license": "ISC",
   "scripts": {
-    "build": "babel index.js --out-dir dist/ --env-name cjs --out-file-extension .js"
+    "build": "babel ./src/**.js --out-dir dist --env-name cjs --out-file-extension .js --ignore 'node_modules/**,dist/**'"
   },
   "peerDependencies": {
     "vite": "^2.0.0 || ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0"
