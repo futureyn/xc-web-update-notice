@@ -1,12 +1,20 @@
 {
-  "name": "xc-web-update-notice-vite",
-  "version": "1.0.6",
-  "description": "前端版本更新通知 - Vite 插件",
-  "type": "module",
-  "main": "./dist/esm/index.mjs",
+  "name": "xc-web-update-notice-vite-ts",
+  "version": "1.0.0",
+  "description": "前端版本更新通知 - Vite TypeScript 插件",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/esm/index.mjs"
+      "require": {
+        "types": "./dist/cjs/index.d.ts",
+        "default": "./dist/cjs/index.js"
+      },
+      "import": {
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
+      }
     }
   },
   "files": [
@@ -14,6 +22,7 @@
   ],
   "keywords": [
     "vite",
+    "typescript",
     "web版本更新通知",
     "version-update"
   ],
@@ -21,7 +30,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/futureyn/xc-web-update-notice.git",
-    "directory": "packages/vite"
+    "directory": "packages/vite-ts"
   },
   "bugs": {
     "url": "https://github.com/futureyn/xc-web-update-notice/issues"
@@ -29,7 +38,10 @@
   "author": "nnn",
   "license": "ISC",
   "scripts": {
-    "build": "babel ./src --out-dir dist/esm --env-name esm --out-file-extension .mjs"
+    "build": "tsc && tsc --module esnext --outDir dist/esm"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
   },
   "peerDependencies": {
     "vite": "^2.0.0 || ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0"

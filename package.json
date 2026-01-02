@@ -40,10 +40,14 @@
     "build:umijs": "npm --workspace=packages/umijs run build",
     "build:webpack": "npm --workspace=packages/webpack run build",
     "build:vite": "npm --workspace=packages/vite run build",
+    "build:vite-ts": "npm --workspace=packages/vite-ts run build",
+    "build:rspack": "npm --workspace=packages/rspack run build",
     "publish:umijs": "cd packages/umijs && npm publish",
     "publish:webpack": "cd packages/webpack && npm publish",
     "publish:vite": "cd packages/vite && npm publish",
-    "publish:all": "npm run publish:umijs && npm run publish:webpack && npm run publish:vite"
+    "publish:vite-ts": "cd packages/vite-ts && npm publish",
+    "publish:rspack": "cd packages/rspack && npm publish",
+    "publish:all": "npm run publish:umijs && npm run publish:webpack && npm run publish:vite && npm run publish:vite-ts && npm run publish:rspack"
   },
   "author": "nnn",
   "license": "ISC",

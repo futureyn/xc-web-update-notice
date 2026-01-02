@@ -1,6 +1,7 @@
+import type { CustomModalAttrs, PluginOptions } from './types';
 
-export default (attrs = {} ,options = {}) => {
-    return `
+export default (attrs: CustomModalAttrs = {}, options: PluginOptions = {}): string => {
+  return `
     (async function () {
         const _o = ${JSON.stringify(options)};
         // 获取版本文件
@@ -33,11 +34,11 @@ export default (attrs = {} ,options = {}) => {
         laterBtn.textContent = '${attrs.laterText || '稍后更新'}';
         laterBtn.onclick = () => {
             const mdoalEle = document.getElementById("__vite-xc-web-update-notice");
-            if(${['rb', 'rt'].includes(attrs.placement)}) {
+            if(${['rb', 'rt'].includes(attrs.placement || 'rt')}) {
                 mdoalEle.style.right = '-340px'
             }
 
-            if(${['lt', 'lb'].includes(attrs.placement)}) {
+            if(${['lt', 'lb'].includes(attrs.placement || 'rt')}) {
                 mdoalEle.style.left = '-340px'
             }
             window._xcUpdate.updateLater();
