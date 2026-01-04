@@ -8,7 +8,7 @@
 
 - [xc-web-update-notice-webpack](https://github.com/futureyn/xc-web-update-notice/tree/main/packages/webpack) - Webpack 版本
 - [xc-web-update-notice-vite](https://github.com/futureyn/xc-web-update-notice/tree/main/packages/vite) - Vite 版本
-- [xc-web-update-notice-vite](https://github.com/futureyn/xc-web-update-notice/tree/main/packages/vite-ts) - Vite+TS 版本
+- [xc-web-update-notice-vite-ts](https://github.com/futureyn/xc-web-update-notice/tree/main/packages/vite-ts) - Vite+TS 版本
 - [xc-web-update-notice-umijs](https://github.com/futureyn/xc-web-update-notice/tree/main/packages/umijs) - Umijs 版本
 
 ### 效果
